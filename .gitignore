@@ -3,8 +3,9 @@
 .Rhistory
 .RData
 .Ruserdata
-doc/
-!doc/report.html
+doc/report_cache
+doc/report_files
+doc/report.html
 data/TRANSIT
 data/eggnog/MM_clhlot17.emapper.orthologs
 renv/

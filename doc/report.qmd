@@ -1,0 +1,176 @@
+---
+title: "Analysis of Ssp4 and Ssp6 effects on Pseudomonas fluorescens using Tn-seq"
+author:
+  - name: Marek Gierlinski
+    affiliations: Data Analysis Group
+    note: "Creator of this report"
+  - name: Sarah Coulthurst
+    affiliation: Molecular Microbiology
+  - name: Mark Reglinski
+    affiliation: Molecular Microbiology
+date: today
+date-format: "D MMMM YYYY"
+execute:
+  echo: false
+  cache: true
+  warning: false
+format:
+  html:
+    theme:
+      - journal
+      - report.scss
+    toc: true
+editor: visual
+self-contained: true
+---
+
+```{r libraries, cache=FALSE, include=FALSE}
+suppressPackageStartupMessages({
+  library(targets)
+  library(tidyverse)
+  library(cowplot)
+  library(gt)
+  library(DT)
+})
+
+tar_config_set(store = "../_targets")
+```
+
+# Proposal
+
+## Background
+
+The type VI secretion system (T6SS) is a versatile bacterial nanoweapon that promotes interspecies competition by injecting toxic effector proteins into competitor cells. We have identified two novel T6SS-delivered toxins from Serratia marcescens (denoted Ssp4 and Ssp6) which promote membrane depolarisation of the target cell. The mechanisms underpinning Ssp4 / Ssp6 toxicity have yet to be elucidated.
+
+Transposon insertion sequencing (Tn-seq) is a high throughput technology that allows a library of bacterial transposon mutants to be screened en mass to identify genetic disruptions that impart a fitness cost or benefit under selected conditions \[1\]. Mutants with a fitness advantage will outcompete those with a fitness disadvantage, and this is reflected by an increased frequency of sequencing reads that map to the corresponding transposon insertion site when the surviving library cells are subjected to next generation sequencing. Comparing the distribution of reads following different treatments (for example Ssp4 vs no intoxication) can identify ORFs that are essential for, or detrimental to, bacterial growth under different conditions.
+
+In this study, we have generated a transposon saturated mutant library of Pseudomonas fluorescens and co-cultured it with S. marcescens containing a T6SS that delivers no toxins or a T6SS capable of delivering Ssp4 or Ssp6 alone. Using Tn-seq, we hope to identify genetic disruptions that render P. fluorescens more or less susceptible to Ssp4 and/or Ssp6 intoxication. We hypothesise that characterising the genes or families of genes that modulate bacterial fitness under the selective pressure imparted by Ssp4 and Ssp6 may help to define the cellular consequences of intoxication by these effectors.
+
+## Experimental design
+
+The P. fluorescens library was co-cultured with S. marcescens expressing; a detoxified T6SS (YL37), T6SS + Ssp4 alone (YL57) or T6SS + Ssp6 alone (GM103) in triplicate. Total genomic DNA was purified, sheared, and regions of the P. fluorescens genome containing transposon insertion sites were amplified by PCR. The transposon insertion sites (and flanking regions of the genome) were sequenced, and the number of reads that mapped to each ORF in the P. fluorescens genome was quantified. These values were normalised to the total number of reads mapped in each sample, allowing the data to be displayed in reads/million. This data was used to calculate the average fold change value of each gene for each comparison of interest (YL37 vs YL57, YL37 vs GM103 and GM103 vs YL57).
+
+A preliminary statistical analysis has also been performed using the methodology outlined by Santa Maria and colleges \[2\] using TRANSIT \[3-4\] In this case the number of transposon insertions at each transposon insertion site within a given ORF was calculated. Within each ORF, the rank order of the counts at each transposon insertion site was compared between the toxin and control reactions using a Mann-Whitney U test. Fold change values were calculated based on the average insertion count in each ORF. Using this method, no single gene (or genes) could be identified that modulated P. fluorescence response to Ssp4 and/or Ssp6 intoxication. Many of the highest fold change / lowest P value hits identified were found to result from a single replicate and we are unsure if these warrant further investigation.
+
+## Proposed work
+
+We are interested in performing pathway enrichment analysis to identify pathways or sets of functionally linked genes that are specifically and significantly enriched / overrepresented or absent / underrepresented in the datasets generated from the Ssp4 / Ssp6 intoxicated samples. Comparison to the dataset generated from the "no toxin" control samples will allow us to eliminate pathways that are modulated in response to co-culture with S. marcescens. We envision using the normalised read counts from each sample as the starting dataset however will be guided by Computational Biology.
+
+## Additional information and available datasets
+
+-   Raw data file (.CSV) detailing the number/percentage of reads mapping to each gene from each replicate (n=9)
+-   Output from transit analysis comparing; YL37 / YL57, YL37 / GM103, YL57 / GM103 (.CSV)
+-   Whole genome sequence of the Pseudomonas fluorescens strain used in this study (performed by MicrobesNG) and associated data files
+-   Data files from manual analyses performed to date including a current list of potential genes of interest (excel files)
+
+N.B. Eggnog mapper has previously been used for functional annotation of bacterial genomes as a prerequisite to metabolic pathway analysis on large genomic datasets \[5\]. Eggnog mapper has not yet been applied to this dataset.
+
+# Annotations
+
+Genome of the strain used was sequenced and assembled. Annotation was done with *Prokka* 1.14.3. The output file is in GeneBank format. An [online converter](http://www.bioinformatics.org/sms2/genbank_trans.html) was used to convert GeneBank to FASTA format with 5536 sequences.
+
+FASTA sequences were uploaded to on-line [eggNOG mapper](http://eggnog-mapper.embl.de).
+
+# Count data
+
+Counts and normalised counts per gene were provided. @fig-replicates shows comparison of replicates in each conditions (normalised counts). We can see that data are noisy.
+
+```{r}
+#| label: fig-replicates
+#| fig-cap: Replicate comparison of normalised counts.
+#| fig-width: 8
+#| fig-height: 8
+tar_read(fig_replicates)
+```
+
+```{r}
+#| label: fig-count-dist
+#| fig-cap: Raw count distribution in all samples. The vertical dashed line represent the cutoff for low expression.
+#| fig-width: 8
+#| fig-height: 8
+tar_read(fig_count_dist)
+```
+
+## Data selection
+
+Due to noise at low counts data were filtered prior to differential expression. Only genes mean count of at least `r tar_read(min_count)` in at least one condition were included. Thus, genes that are lowly expressed in all samples are rejected. The cutoff is shown in @fig-count-dist.
+
+# Differential experssion
+
+Differential expression was carried out with *edgeR* ver. `r tar_read(edger_version)`. For simplicity, and to avoid noise from other conditions influencing a given pair, the comparison was done pair-wise, without building a global model, that is, for a given pair of conditions only these two conditions were selected from data.
+
+```{r}
+#| label: fig-de
+#| fig-cap: Volcano plot and MA plot illustrating the results for differential expression. No significant genes were found at FDR < 0.05 limit.
+#| fig-width: 10
+#| fig-height: 8
+plot_grid(
+  tar_read(fig_volcano),
+  tar_read(fig_ma),
+  ncol = 1
+)
+```
+
+Differential expression results are illustrated in @fig-de. No statistically significant genes were found at FDR \< 0.05 level. There are a few genes seemingly changing a lot, but their significance disappears after multiple correction tests. @fig-examples shows examples of a few genes with large fold change. Some of these are due to just one replicate standing out, but there are few clear examples, e.g. ygfZ, changing dramatically under SSp4.
+
+```{r}
+#| label: fig-examples
+#| fig-cap: Examples of genes with large fold change in any pair of conditions.
+#| fig-width: 10
+#| fig-height: 8
+tar_read(fig_example_genes)
+```
+
+# Gene set enrichment
+
+Online [eggNOG mapper](http://eggnog-mapper.embl.de) was used to find association between gene sequences and GO and KEGG functional terms. eggNOG provides with the following functional terms:
+
+```{r}
+tribble(
+  ~Column, ~Content,
+  "GOs", "GO terms",
+  "KEGG_ko", "Orthology",
+  "KEGG_Pathway", "ko and map pathways",
+  "KEGG_Module", "Modules: manually defined functional units of gene sets",
+  "KEGG_Reaction", "Reactions: manually defined functional units of reaction sets",
+  "KEGG_rclass", "Classification of reactions based on the chemical structure transformation patterns of substrate-product pairs",
+  "BRITE", "Collection of hierarchical classification systems capturing functional hierarchies of various biological objects"
+) |> 
+  gt()
+```
+
+
+Gene set enrichment has been carried out using *fgsea* version `r tar_read(fgsea_version)`, separately for each contrast and ontology column. The results are summarised below, with only terms with adjusted p-value < 0.05 shown. Note, these results strongly depend on the count cutodd choice.
+
+```{r}
+tar_load(tab_gse)
+tab_gse <- tab_gse |> 
+  mutate(NES = signif(NES, 3))
+```
+
+## YL57-YL37
+
+```{r}
+tab_gse |> 
+  filter(contrast == "YL57-YL37") |> 
+  select(-contrast) |> 
+  DT::datatable()
+```
+
+## GM103-YL37
+
+```{r}
+tab_gse |> 
+  filter(contrast == "GM103-YL37") |> 
+  select(-contrast) |> 
+  DT::datatable()
+```
+
+## GM103-YL57
+
+```{r}
+tab_gse |> 
+  filter(contrast == "GM103-YL57") |> 
+  select(-contrast) |> 
+  DT::datatable()
+```
