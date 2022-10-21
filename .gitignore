@@ -6,5 +6,6 @@
 doc/
 !doc/report.html
 data/TRANSIT
+data/eggnog/MM_clhlot17.emapper.orthologs
 renv/
 _targets/
