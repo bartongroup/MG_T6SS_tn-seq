@@ -1,0 +1,13 @@
+Status	YL37_1.sam	YL37_2.sam	YL37_3.sam	GM103_1.sam	GM103_2.sam	GM103_3.sam	YL57_1.sam	YL57_2.sam	YL57_3.sam
+Assigned	3522036	2826692	1750852	2836823	3618851	2976736	2480791	2002155	2561891
+Unassigned_Unmapped	524906	354708	252495	317244	422530	364448	449407	311058	434785
+Unassigned_MappingQuality	0	0	0	0	0	0	0	0	0
+Unassigned_Chimera	0	0	0	0	0	0	0	0	0
+Unassigned_FragmentLength	0	0	0	0	0	0	0	0	0
+Unassigned_Duplicate	0	0	0	0	0	0	0	0	0
+Unassigned_MultiMapping	0	0	0	0	0	0	0	0	0
+Unassigned_Secondary	0	0	0	0	0	0	0	0	0
+Unassigned_NonSplit	0	0	0	0	0	0	0	0	0
+Unassigned_NoFeatures	333151	259531	163379	256419	338769	273166	230467	192972	244619
+Unassigned_Overlapping_Length	0	0	0	0	0	0	0	0	0
+Unassigned_Ambiguity	4943	3149	2124	3312	5972	3480	3491	2625	3921

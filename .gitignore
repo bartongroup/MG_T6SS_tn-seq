@@ -1,0 +1,10 @@
+.DS_Store
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+doc/
+!doc/report.html
+data/TRANSIT
+renv/
+_targets/
