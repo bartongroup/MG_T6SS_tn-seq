@@ -39,21 +39,48 @@ get_kegg_terms <- function() {
     })
 }
 
-extract_obo_values <- function(obo, key) {
-  obo |>
-    stringr::str_subset(stringr::str_glue("^{key}:")) |>
-    stringr::str_remove(stringr::str_glue("{key}:\\s"))
-}
 
 get_go_terms <- function(obo_file = "http://purl.obolibrary.org/obo/go.obo") {
-  obo <- readr::read_lines(obo_file)
-  ids <- extract_obo_values(obo, "id")
-  names <- extract_obo_values(obo, "name")
+  parsed <- readr::read_lines(obo_file) |>
+    parse_obo_file()
 
-  tibble::tibble(
-    term_id = ids,
-    term_name = names
+  terms <- parsed |>
+    dplyr::filter(key == "name") |>
+    select(term_id, term_name = value)
+
+  alt_terms <- parsed |>
+    dplyr::filter(key == "alt_id") |>
+    left_join(terms, by = "term_id") |>
+    select(term_id = value, term_name)
+
+  bind_rows(
+    terms,
+    alt_terms
   )
+}
+
+
+parse_obo_file <- function(obo) {
+  # Index start and end of each term
+  idx_start_term <- obo |>
+    stringr::str_which("\\[Term\\]")
+  idx_empty <- obo |>
+    stringr::str_which("^$")
+  idx_empty <- idx_empty[idx_empty > idx_start_term[1]]
+  idx_end_term <- idx_empty[1:length(idx_start_term)]
+
+  purrr::map2_dfr(idx_start_term, idx_end_term, function(i1, i2) {
+    obo_term <- obo[(i1 + 1):(i2 - 1)]
+
+    trm <- obo_term |>
+      stringr::str_split(":\\s", 2, simplify = TRUE)
+    colnames(trm) <- c("key", "value")
+    # assuming term_id is in the first line
+    tid <- trm[1, 2]
+    cbind(trm, term_id = tid) |>
+      as.data.frame()
+  }) |>
+    tibble::as_tibble()
 }
 
 

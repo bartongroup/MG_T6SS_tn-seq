@@ -4,12 +4,17 @@ SAMPLES <- c("YL37_1", "YL37_2", "YL37_3", "GM103_1", "GM103_2", "GM103_3",
 COUNT_FILE <- "data/220707_counts.txt"
 EGGNOG_FILE <- "data/eggnog/MM_clhlot17.emapper.annotations.tsv"
 
-MIN_COUNT = 10
-
 CONTRASTS <- c("YL57-YL37", "GM103-YL37", "GM103-YL57")
 
 FDR_LIMIT <- 0.05
 LOGFC_LIMIT <- 0
+
+CV_LIMITS <- tibble::tribble(
+  ~LIMIT,
+  100,
+  1,
+  0.5
+)
 
 make_metadata <- function() {
   tibble(

@@ -10,3 +10,5 @@ data/TRANSIT
 data/eggnog/MM_clhlot17.emapper.orthologs
 renv/
 _targets/
+shiny/data/
+R/packages.R

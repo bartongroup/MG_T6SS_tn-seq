@@ -12,8 +12,12 @@ options(tidyverse.quiet = TRUE, dplyr.summarise.inform = FALSE)
 required_packages <- read.delim("R/packages", header = FALSE, col.names = "name")$name
 tar_option_set(packages = required_packages, format = "qs")
 
+# A file for renv to discover dependencies
+pkgs <- paste0("library(", required_packages, ")")
+writeLines(pkgs, "R/packages.R")
+
 # Create dirs if necessary
-# for (d in c("tab", "fig", "cache")) if (!dir.exists(d)) dir.create(d)
+for (d in c("tab")) if (!dir.exists(d)) dir.create(d)
 
 # for interactive session only
 if (interactive()) sapply(required_packages, library, character.only = TRUE)

@@ -5,26 +5,32 @@ pivot_dat <- function(raw, suffix) {
     mutate(sample = str_remove(sample, paste0(".", suffix)))
 }
 
+remove_zero_genes <- function(dat) {
+  dat |>
+    group_by(id) |>
+    mutate(mx = max(count_sam)) |>
+    filter(mx > 0) |>
+    ungroup() |>
+    select(-mx)
+}
 
-read_counts <- function(file, meta, cutoff = 0) {
+
+read_counts <- function(file, meta) {
   raw <- read_tsv(file, skip = 2, show_col_types = FALSE)
 
   dat <- pivot_dat(raw, "sam") |>
-    full_join(pivot_dat(raw, "norm"), by = c("id", "sample"))
+    full_join(pivot_dat(raw, "norm"), by = c("id", "sample")) |>
+    remove_zero_genes()
 
-  # good genes: at least one condition mean > cutoff
-  goods <- dat |>
+  sel <- dat$id |>
+    unique()
+
+  ms <- dat |>
     left_join(meta, by = "sample") |>
     group_by(id, condition) |>
-    summarise(m = mean(count_sam, na.rm = TRUE)) |>
+    summarise(m = mean(count_norm), s = sd(count_norm)) |>
     ungroup() |>
-    group_by(id) |>
-    summarise(max_m = max(m)) |>
-    mutate(good = max_m > cutoff) |>
-    select(-max_m)
-
-  dat <- dat |>
-    left_join(goods, by = "id")
+    mutate(cv = s / m)
 
   info <- raw |>
     select(id = Geneid, chr = Chr, start = Start, end = End, strand = Strand, gene_symbol = Name, description = Desc) |>
@@ -33,7 +39,9 @@ read_counts <- function(file, meta, cutoff = 0) {
   list(
     metadata = meta,
     dat = dat,
-    info = info
+    sel = sel,
+    info = info,
+    ms = ms
   )
 }
 
@@ -46,4 +54,12 @@ dat2mat <- function(dat, what, id_col = "id") {
     as.matrix()
 }
 
-
+filter_cv <- function(dset, cv_limit) {
+  bads <- dset$ms |>
+    filter(is.na(cv) | cv > cv_limit) |>
+    pull(id) |>
+    unique()
+  goods <- setdiff(unique(dset$dat$id), bads)
+  dset$sel <- goods
+  dset
+}

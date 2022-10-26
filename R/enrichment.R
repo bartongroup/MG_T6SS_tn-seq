@@ -1,7 +1,7 @@
-fgsea_run <- function(val_data, term2feature, term_info, min_size = 3) {
-  val_data <- val_data %>%
+fgsea_run <- function(vd, term2feature, term_info, min_size = 3) {
+  vd <- vd %>%
     filter(!is.na(value) & !is.na(feature_id))
-  ranks <-  set_names(val_data$value, val_data$feature_id)
+  ranks <-  set_names(vd$value, vd$feature_id)
   fgsea::fgsea(pathways = term2feature, stats = ranks, nproc = 6, minSize = min_size, eps = 0) %>%
     as_tibble() %>%
     left_join(term_info, by = c("pathway" = "term_id")) %>%
@@ -34,11 +34,11 @@ fgsea_all_terms <- function(d, all_terms, feature_var = "gene_symbol", value_var
 }
 
 
-tabulate_gse <- function(gse, fdr_limit = 0.05) {
+tabulate_gse <- function(gse, fdr_limit = 1) {
   gse |>
     filter(padj < fdr_limit) |>
     unnest(leading_edge) |>
-    group_by(term_id, term_name, NES, ontology, contrast) |>
+    group_by(term_id, term_name, NES, pval, padj, ontology, contrast) |>
     summarise(genes = str_c(leading_edge, collapse = ", ")) |>
     arrange(NES) |>
     ungroup() |>

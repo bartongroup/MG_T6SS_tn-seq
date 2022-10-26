@@ -73,7 +73,9 @@ FASTA sequences were uploaded to on-line [eggNOG mapper](http://eggnog-mapper.em
 
 # Count data
 
-Counts and normalised counts per gene were provided. @fig-replicates shows comparison of replicates in each conditions (normalised counts). We can see that data are noisy.
+Counts and normalised counts per gene were provided. @fig-replicates shows comparison of replicates in each conditions (normalised counts). We can see that data are noisy. 
+Raw count distribution for each sample is shown in @fig-count-dist.
+
 
 ```{r}
 #| label: fig-replicates
@@ -83,49 +85,74 @@ Counts and normalised counts per gene were provided. @fig-replicates shows compa
 tar_read(fig_replicates)
 ```
 
+
 ```{r}
 #| label: fig-count-dist
-#| fig-cap: Raw count distribution in all samples. The vertical dashed line represent the cutoff for low expression.
+#| fig-cap: Raw count distribution in all samples
 #| fig-width: 8
 #| fig-height: 8
-tar_read(fig_count_dist)
+tar_read(fig_count_dist) 
 ```
 
-## Data selection
+# All data
 
-Due to noise at low counts data were filtered prior to differential expression. Only genes mean count of at least `r tar_read(min_count)` in at least one condition were included. Thus, genes that are lowly expressed in all samples are rejected. The cutoff is shown in @fig-count-dist.
+First, all data are analysed.
 
-# Differential experssion
+## Differential experssion
 
 Differential expression was carried out with *edgeR* ver. `r tar_read(edger_version)`. For simplicity, and to avoid noise from other conditions influencing a given pair, the comparison was done pair-wise, without building a global model, that is, for a given pair of conditions only these two conditions were selected from data.
 
 ```{r}
-#| label: fig-de
+#| label: fig-de-all
 #| fig-cap: Volcano plot and MA plot illustrating the results for differential expression. No significant genes were found at FDR < 0.05 limit.
 #| fig-width: 10
 #| fig-height: 8
 plot_grid(
-  tar_read(fig_volcano),
-  tar_read(fig_ma),
+  tar_read(fig_volcano_100),
+  tar_read(fig_ma_100),
   ncol = 1
 )
 ```
 
-Differential expression results are illustrated in @fig-de. No statistically significant genes were found at FDR \< 0.05 level. There are a few genes seemingly changing a lot, but their significance disappears after multiple correction tests. @fig-examples shows examples of a few genes with large fold change. Some of these are due to just one replicate standing out, but there are few clear examples, e.g. ygfZ, changing dramatically under SSp4.
+Differential expression results are illustrated in @fig-de-all. No statistically significant genes were found at FDR \< 0.05 level. There are a few genes seemingly changing a lot, but their significance disappears after multiple correction tests. 
+
+# CV < 0.5
+
+## Differential experssion
+
+Many genes exhibit large variability within a condition, often one replicate stands out from the other two. Here, data are limited to genes where coefficient of variation in each condition is less than 0.5. This is a very conservative approach, out of the `r tar_read(n_genes_100)` genes only `r tar_read(n_genes_0.5)` are selected. Differential expression results are shown in @fig-de-0.5.
+
 
 ```{r}
-#| label: fig-examples
-#| fig-cap: Examples of genes with large fold change in any pair of conditions.
+#| label: fig-de-0.5
+#| fig-cap: Volcano plot and MA plot illustrating the results for differential expression for a selection of genes with CV < 0.5 in each condition. Identifiers of unannotated genes are simplified, e.g. `33931E_Pfluorescens55_00256` -> `00256`.
 #| fig-width: 10
 #| fig-height: 8
-tar_read(fig_example_genes)
+plot_grid(
+  tar_read(fig_volcano_0.5),
+  tar_read(fig_ma_0.5),
+  ncol = 1
+)
 ```
 
-# Gene set enrichment
+
+Here are normalised counts from significant genes.
+
+```{r}
+#| label: fig-sig-0.5
+#| fig-cap: Normalised count from significantly changing genes in a selection of CV < 0.5.
+#| fig-width: 10
+#| fig-height: 12
+tar_read(fig_sig_genes_0.5) 
+```
+
+## Gene set enrichment
 
 Online [eggNOG mapper](http://eggnog-mapper.embl.de) was used to find association between gene sequences and GO and KEGG functional terms. eggNOG provides with the following functional terms:
 
 ```{r}
+#| label: tbl-eggnog-column
+#| tbl-cap: Columns in eggNOG output file.
 tribble(
   ~Column, ~Content,
   "GOs", "GO terms",
@@ -140,37 +167,77 @@ tribble(
 ```
 
 
-Gene set enrichment has been carried out using *fgsea* version `r tar_read(fgsea_version)`, separately for each contrast and ontology column. The results are summarised below, with only terms with adjusted p-value < 0.05 shown. Note, these results strongly depend on the count cutodd choice.
+Gene set enrichment has been carried out using *fgsea* version `r tar_read(fgsea_version)`, separately for each contrast and ontology column.
+
+Only one functional term (Chaperones and folding catalysts) is statistically significant after multiple test corrections, in contrast GM103-YL57, at 0.05 level. On the other hand, many terms overlap, or even have the same genes, so there are strong correlations in data, hence multiple test corrections are not quite correct.
 
 ```{r}
-tar_load(tab_gse)
-tab_gse <- tab_gse |> 
-  mutate(NES = signif(NES, 3))
+tar_load(tab_gse_0.5)
+tab_gse_0.5 <- tab_gse_0.5 |> 
+  select(-c(ontology)) |> 
+  arrange(pval) |> 
+  head(30) |> 
+  mutate(
+    NES = signif(NES, 3),
+    pval = signif(pval, 2),
+    padj = signif(padj, 2)
+  ) 
 ```
 
-## YL57-YL37
+Table @tbl-gse show top 30 functional terms (according to p-value) from GSE.
+
 
 ```{r}
-tab_gse |> 
-  filter(contrast == "YL57-YL37") |> 
-  select(-contrast) |> 
-  DT::datatable()
+#| label: tbl-gse
+#| tbl-cap: Top 30 functional terms from GSE. NES is the normalised effect size, with the same sign as the log-fold-change.
+tab_gse_0.5 |> 
+  gt() 
+  #DT::datatable()
 ```
 
-## GM103-YL37
+@fig-chaperones shows genes annotated with the functional term "Chaperones and folding catalysts".
 
 ```{r}
-tab_gse |> 
-  filter(contrast == "GM103-YL37") |> 
-  select(-contrast) |> 
-  DT::datatable()
+#| fig-cap: Chaperones and folding catalysts genes.
+#| label: fig-chaperones
+#| fig-width: 8
+#| fig-height: 3
+tar_read(fig_chaperones) 
 ```
 
-## GM103-YL57
+
+@fig-lysine-deg shows genes annotated with the functional term "Lysine degradation". This is the term with largest NES.
 
 ```{r}
-tab_gse |> 
-  filter(contrast == "GM103-YL57") |> 
-  select(-contrast) |> 
-  DT::datatable()
+#| fig-cap: Lysine degradation genes.
+#| label: fig-lysine-deg
+#| fig-width: 10
+#| fig-height: 8
+tar_read(fig_lysin_deg) 
 ```
+
+
+# Resources
+
+## Tables
+
+ - [Differential expression results](https://www.compbio.dundee.ac.uk/user/mgierlinski/ts66_tn_seq/tab/de_cv0.5.tsv)
+ - [Gene set enrichment results](https://www.compbio.dundee.ac.uk/user/mgierlinski/ts66_tn_seq/tab/gse_cv0.5.tsv)
+
+## Online tools
+
+ - [Interactive data explorer](https://shiny.compbio.dundee.ac.uk/public/marek_ts66_tn_seq/edger/)
+ 
+## Code
+
+ - [R code in GitHub](https://github.com/bartongroup/MG_T6SS_tn-seq)
+ 
+ 
+## Session info
+
+```{r sesinfo}
+tar_read(session_info)
+```
+
+
+

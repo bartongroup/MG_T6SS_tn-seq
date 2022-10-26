@@ -1,27 +1,29 @@
 okabe_ito_palette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#AAAAAA", "#000000")
 
 
-plot_count_distribution <- function(dset, cutoff = 1) {
+plot_count_distribution <- function(dset) {
   dset$dat |>
     ggplot(aes(x = count_sam, y = ..density..)) +
     theme_bw() +
     theme(panel.grid = element_blank()) +
     geom_histogram(bins = 60) +
-    geom_vline(xintercept = cutoff, colour = "red", linetype = "dashed") +
     facet_wrap(~sample) +
     scale_x_log10() +
     scale_y_continuous(expand = expansion(mult = c(0, 0.03))) +
     labs(x = "Count", y = "Density")
 }
 
-plot_genes <- function(dset, gids, what = "count_norm", point_size = 3) {
+plot_genes <- function(dset, fids, what = "count_norm", point_size = 3, ncol = 4) {
+  ids <- dset$info |>
+    filter(feature_id %in% fids) |>
+    pull(id)
+
   dset$dat |>
-    filter(id %in% gids) |>
+    filter(id %in% ids) |>
     left_join(dset$metadata, by = "sample") |>
     left_join(dset$info, by = "id") |>
     mutate(
-      condition = factor(condition, levels = levels(dset$metadata$condition)),
-      gene_symbol = if_else(is.na(gene_symbol), id, gene_symbol)
+      condition = factor(condition, levels = levels(dset$metadata$condition))
     ) |>
   ggplot(aes(x = condition, y = get(what), fill = replicate)) +
     theme_bw() +
@@ -29,7 +31,7 @@ plot_genes <- function(dset, gids, what = "count_norm", point_size = 3) {
     geom_point(shape = 21, colour = "grey50", size = point_size, position = position_dodge(width = 0.2)) +
     scale_fill_manual(values = okabe_ito_palette) +
     scale_y_continuous(expand = expansion(mult = c(0, 0.03))) +
-    facet_wrap(~ gene_symbol, scales = "free_y") +
+    facet_wrap(~ feature_id, scales = "free_y", ncol = ncol) +
     labs(x = NULL, y = what)
 }
 
@@ -73,7 +75,7 @@ plot_volma <- function(res, p, fdr, fc, group, point_size, point_alpha) {
       p = get(p),
       group = get(group)
     ) |>
-    select(x, y, sig, group)
+    select(x, y, sig, group, feature_id)
   rsel <- r |> filter(sig)
   rm(res)  # Minimise environment for serialisation
   ggplot(r, aes(x = x, y = y)) +
@@ -84,6 +86,7 @@ plot_volma <- function(res, p, fdr, fc, group, point_size, point_alpha) {
     ) +
     geom_point(size = point_size, alpha = point_alpha, colour = "grey50") +
     geom_point(data = rsel, colour = "black") +
+    geom_text_repel(data = rsel, aes(label = str_remove(feature_id, "33931E_Pfluorescens55_"))) +
     facet_grid(. ~ group)
 }
 
@@ -112,3 +115,8 @@ plot_volcano <- function(res, fc = "logFC", p = "PValue", fdr = "FDR", group = "
     scale_y_continuous(expand = expansion(mult = c(0, 0.03)))
 }
 
+plot_cv <- function(dset) {
+  dset$ms |>
+    ggplot(aes(x = m, y = cv, colour = condition)) +
+    theme_bw()
+}

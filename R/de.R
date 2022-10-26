@@ -1,12 +1,16 @@
 edger_local <- function(dset, contrasts, fdr_limit = 0.05, logfc_limit = 0) {
-  tab_all <- dat2mat(dset$dat |> filter(good), "count_sam")
+  dat <- dset$dat |>
+    filter(id %in% dset$sel)
+
+  tab_all <- dat2mat(dat, "count_sam")
 
   map_dfr(contrasts, function(ctr) {
     conditions <- str_split(ctr, "-") |> unlist()
     meta <- dset$metadata |>
       select(sample, condition) |>
-      mutate(condition = as.character(condition)) |>   # factors mess up design matrix
       filter(condition %in% conditions) |>
+      mutate(condition = factor(condition, levels = rev(conditions))) |>   # second minus first
+      arrange(condition) |>
       distinct()
     design_mat <- model.matrix(~condition, meta)
     coef <- colnames(design_mat)[2]
