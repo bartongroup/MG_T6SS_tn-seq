@@ -12,3 +12,4 @@ renv/
 _targets/
 shiny/data/
 R/packages.R
+tab/
