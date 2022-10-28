@@ -108,6 +108,12 @@ read_eggnog_mapping <- function(file) {
 }
 
 eggnog_kegg <- function(egmap) {
+  # I discovered that pathways koxxxx and mapxxx are identical, so removing all
+  # mapxxx terms.
+
+  egmap <- egmap |>
+    filter(!(str_detect(term_id, "^map") & colname == "KEGG_Pathway"))
+
   kg <- get_kegg_terms()
 
   colnames <- egmap |>
