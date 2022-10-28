@@ -156,6 +156,7 @@ Online [eggNOG mapper](http://eggnog-mapper.embl.de) was used to find associatio
 tribble(
   ~Column, ~Content,
   "GOs", "GO terms",
+  "PFAMs", "PFAM",
   "KEGG_ko", "Orthology",
   "KEGG_Pathway", "ko and map pathways",
   "KEGG_Module", "Modules: manually defined functional units of gene sets",
@@ -181,7 +182,7 @@ tab_gse_0.5 <- tab_gse_0.5 |>
     NES = signif(NES, 3),
     pval = signif(pval, 2),
     padj = signif(padj, 2)
-  ) 
+  )
 ```
 
 Table @tbl-gse show top 30 functional terms (according to p-value) from GSE.
@@ -191,7 +192,7 @@ Table @tbl-gse show top 30 functional terms (according to p-value) from GSE.
 #| label: tbl-gse
 #| tbl-cap: Top 30 functional terms from GSE. NES is the normalised effect size, with the same sign as the log-fold-change.
 tab_gse_0.5 |> 
-  gt() 
+  gt()
   #DT::datatable()
 ```
 
@@ -223,6 +224,8 @@ tar_read(fig_lysin_deg)
 
  - [Differential expression results](https://www.compbio.dundee.ac.uk/user/mgierlinski/ts66_tn_seq/tab/de_cv0.5.tsv)
  - [Gene set enrichment results](https://www.compbio.dundee.ac.uk/user/mgierlinski/ts66_tn_seq/tab/gse_cv0.5.tsv)
+ - [eggNOG mapping](https://www.compbio.dundee.ac.uk/user/mgierlinski/ts66_tn_seq/tab/eggnog.xlsx)
+
 
 ## Online tools
 

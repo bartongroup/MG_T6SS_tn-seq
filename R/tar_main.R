@@ -10,7 +10,8 @@ targets_main <- function() {
     tar_target(egg, read_eggnog_mapping(EGGNOG_FILE)),
     tar_target(egg_kegg, eggnog_kegg(egg)),
     tar_target(egg_go, eggnog_go(egg)),
-    tar_target(all_terms, c(list(GO = egg_go), egg_kegg)),
+    tar_target(egg_pfam, eggnog_pfam(egg)),
+    tar_target(all_terms, c(list(GO = egg_go, PFAM = egg_pfam), egg_kegg)),
     tar_target(fterms, prepare_terms(all_terms))
   )
 
@@ -41,7 +42,8 @@ targets_main <- function() {
     tar_target(fig_chaperones, plot_genes(cnts_flt_0.5, chaperones_genes)),
 
     tar_target(sav_de, write_tsv(edger_0.5, "tab/de_cv0.5.tsv")),
-    tar_target(sav_gse, write_tsv(tab_gse_0.5, "tab/gse_cv0.5.tsv"))
+    tar_target(sav_gse, write_tsv(tab_gse_0.5, "tab/gse_cv0.5.tsv")),
+    tar_target(cp_egg, file.copy("data/eggnog/MM_clhlot17.emapper.annotations.xlsx", "tab/eggnog.xlsx"))
   )
 
   shiny <- list(

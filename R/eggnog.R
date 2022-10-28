@@ -13,7 +13,8 @@ KEGG_COLUMNS <- tribble(
 
 EGGNOG_COLUMNS <- KEGG_COLUMNS |>
   add_row(colname = "GOs", prefix = "") |>
-  add_column(ontology =  c(rep("KEGG", nrow(KEGG_COLUMNS)), "GO"))
+  add_row(colname = "PFAMs", prefix = "") |>
+  add_column(ontology =  c(rep("KEGG", nrow(KEGG_COLUMNS)), "GO", "PFAM"))
 
 
 fetch_kegg_data <- function(path) {
@@ -147,6 +148,23 @@ eggnog_go <- function(egmap) {
 
   list(
     terms = go,
+    mapping = mapping
+  )
+}
+
+
+eggnog_pfam <- function(egmap) {
+  mapping <- egmap |>
+    filter(ontology == "PFAM") |>
+    select(feature_id = id, term_id) |>
+    distinct()
+  terms <- tibble(
+    term_id = unique(mapping$term_id),
+    term_name = term_id
+  )
+
+  list(
+    terms = terms,
     mapping = mapping
   )
 }
