@@ -98,7 +98,7 @@ plot_ma <- function(res, a = "logCPM", fc = "logFC", p = "PValue", fdr = "FDR", 
       y = get(fc),
     ) |>
     plot_volma(p, fdr, fc, group, point_size, point_alpha) +
-    geom_hline(yintercept = 0, size = 0.1, alpha = 0.5) +
+    geom_hline(yintercept = 0, linewidth = 0.1, alpha = 0.5) +
     labs(x = expression(log[10]~Intensity), y = expression(log[2]~FC))
 }
 
@@ -110,7 +110,7 @@ plot_volcano <- function(res, fc = "logFC", p = "PValue", fdr = "FDR", group = "
       y = -log10(get(p)),
     ) |>
     plot_volma(p, fdr, fc, group, point_size, point_alpha) +
-    geom_vline(xintercept = 0, size = 0.1, alpha = 0.5) +
+    geom_vline(xintercept = 0, linewidth = 0.1, alpha = 0.5) +
     labs(x = expression(log[2]~FC), y = expression(-log[10]~P)) +
     scale_y_continuous(expand = expansion(mult = c(0, 0.03)))
 }
