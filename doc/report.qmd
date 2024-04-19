@@ -73,9 +73,7 @@ FASTA sequences were uploaded to on-line [eggNOG mapper](http://eggnog-mapper.em
 
 # Count data
 
-Counts and normalised counts per gene were provided. @fig-replicates shows comparison of replicates in each conditions (normalised counts). We can see that data are noisy. 
-Raw count distribution for each sample is shown in @fig-count-dist.
-
+Counts and normalised counts per gene were provided. @fig-replicates shows comparison of replicates in each conditions (normalised counts). We can see that data are noisy. Raw count distribution for each sample is shown in @fig-count-dist.
 
 ```{r}
 #| label: fig-replicates
@@ -84,7 +82,6 @@ Raw count distribution for each sample is shown in @fig-count-dist.
 #| fig-height: 8
 tar_read(fig_replicates)
 ```
-
 
 ```{r}
 #| label: fig-count-dist
@@ -114,14 +111,13 @@ plot_grid(
 )
 ```
 
-Differential expression results are illustrated in @fig-de-all. No statistically significant genes were found at FDR \< 0.05 level. There are a few genes seemingly changing a lot, but their significance disappears after multiple correction tests. 
+Differential expression results are illustrated in @fig-de-all. No statistically significant genes were found at FDR \< 0.05 level. There are a few genes seemingly changing a lot, but their significance disappears after multiple correction tests.
 
-# CV < 0.5
+# CV \< 0.5
 
 ## Differential experssion
 
 Many genes exhibit large variability within a condition, often one replicate stands out from the other two. Here, data are limited to genes where coefficient of variation in each condition is less than 0.5. This is a very conservative approach, out of the `r tar_read(n_genes_100)` genes only `r tar_read(n_genes_0.5)` are selected. Differential expression results are shown in @fig-de-0.5.
-
 
 ```{r}
 #| label: fig-de-0.5
@@ -134,7 +130,6 @@ plot_grid(
   ncol = 1
 )
 ```
-
 
 Here are normalised counts from significant genes.
 
@@ -167,7 +162,6 @@ tribble(
   gt()
 ```
 
-
 Gene set enrichment has been carried out using *fgsea* version `r tar_read(fgsea_version)`, separately for each contrast and ontology column.
 
 Only one functional term (Chaperones and folding catalysts) is statistically significant after multiple test corrections, in contrast GM103-YL57, at 0.05 level. On the other hand, many terms overlap, or even have the same genes, so there are strong correlations in data, hence multiple test corrections are not quite correct.
@@ -187,7 +181,6 @@ tab_gse_0.5 <- tab_gse_0.5 |>
 
 Table @tbl-gse show top 30 functional terms (according to p-value) from GSE.
 
-
 ```{r}
 #| label: tbl-gse
 #| tbl-cap: Top 30 functional terms from GSE. NES is the normalised effect size, with the same sign as the log-fold-change.
@@ -206,7 +199,6 @@ tab_gse_0.5 |>
 tar_read(fig_chaperones) 
 ```
 
-
 @fig-lysine-deg shows genes annotated with the functional term "Lysine degradation". This is the term with largest NES.
 
 ```{r}
@@ -217,30 +209,24 @@ tar_read(fig_chaperones)
 tar_read(fig_lysin_deg) 
 ```
 
-
 # Resources
 
 ## Tables
 
- - [Differential expression results](https://www.compbio.dundee.ac.uk/user/mgierlinski/ts66_tn_seq/tab/de_cv0.5.tsv)
- - [Gene set enrichment results](https://www.compbio.dundee.ac.uk/user/mgierlinski/ts66_tn_seq/tab/gse_cv0.5.tsv)
- - [eggNOG mapping](https://www.compbio.dundee.ac.uk/user/mgierlinski/ts66_tn_seq/tab/eggnog.xlsx)
-
+-   [Differential expression results](https://www.compbio.dundee.ac.uk/user/mgierlinski/ts66_tn_seq/tab/de_cv0.5.tsv)
+-   [Gene set enrichment results](https://www.compbio.dundee.ac.uk/user/mgierlinski/ts66_tn_seq/tab/gse_cv0.5.tsv)
+-   [eggNOG mapping](https://www.compbio.dundee.ac.uk/user/mgierlinski/ts66_tn_seq/tab/eggnog.xlsx)
 
 ## Online tools
 
- - [Interactive data explorer](https://shiny.compbio.dundee.ac.uk/public/marek_ts66_tn_seq/edger/)
- 
+-   [Interactive data explorer](https://shiny.compbio.dundee.ac.uk/public/marek_ts66_tn_seq/edger/)
+
 ## Code
 
- - [R code in GitHub](https://github.com/bartongroup/MG_T6SS_tn-seq)
- 
- 
+-   [R code in GitHub](https://github.com/bartongroup/MG_T6SS_tn-seq)
+
 ## Session info
 
 ```{r sesinfo}
 tar_read(session_info)
 ```
-
-
-
