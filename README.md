@@ -1,6 +1,7 @@
 # Analysis of Ssp4 and Ssp6 effects on Pseudomonas fluorescens using Tn-seq
 
-With Sarah Coulthurst and Mark Reglinski (Molecular Microbiology)
+The R code to accompany the manuscript "Two ion-selective pore forming effectors delivered by the same Type VI secretion system have distinct consequences for targeted bacterial cells" by Mark Reglinski, Quenton W Hurst, David Williams, Marek Gierlinski, Katharine Mathers, Adam Ostrowski, Megan Bergkessel, Ulrich Zachariae, Samantha J Pitt and Sarah J Coulthurst.
+
 
 ## Instructions
 
